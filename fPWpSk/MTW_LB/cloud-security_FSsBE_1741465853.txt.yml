@@ -2,7 +2,6 @@ codecov:
   notify:
     require_ci_to_pass: yes
 
-comment: off
 
 coverage:
   precision: 2
