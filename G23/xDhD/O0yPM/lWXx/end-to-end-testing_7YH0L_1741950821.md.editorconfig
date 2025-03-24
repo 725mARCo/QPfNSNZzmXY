@@ -13,7 +13,6 @@ trim_trailing_whitespace = true
 [{*.ats,*.cts,*.mts,*.ts}]
 indent_size = 2
 tab_width = 2
-
 [detox/index.d.ts]
 indent_size = 4
 tab_width = 4
