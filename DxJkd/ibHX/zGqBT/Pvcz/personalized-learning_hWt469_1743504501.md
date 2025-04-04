@@ -142,7 +142,6 @@ For Docker-based development:
 
 ## Environment Variables
 
-Create a `.env` file in the root directory with the necessary environment variables for local development. See the example in the README.
 
 ## Contribution Guidelines
 
