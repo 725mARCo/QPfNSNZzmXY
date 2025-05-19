@@ -2,7 +2,6 @@
 !package.json
 !yarn.lock
 !scripts
-!tsconfig.json
 !docs
 !CHANGELOG.md
 !LICENSE
