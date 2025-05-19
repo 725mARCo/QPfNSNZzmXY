@@ -91,7 +91,6 @@ To run a service locally:
 ```bash
 # User Service
 uvicorn aichildedu.user_service.main:app --reload --port 8001
-
 # Content Service
 uvicorn aichildedu.content_service.main:app --reload --port 8002
 
