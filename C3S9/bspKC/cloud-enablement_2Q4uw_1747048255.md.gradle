@@ -4,5 +4,3 @@
 
     id 'com.android.library' version '8.1.2' apply false
 }
-
-task clean(type: Delete) {
