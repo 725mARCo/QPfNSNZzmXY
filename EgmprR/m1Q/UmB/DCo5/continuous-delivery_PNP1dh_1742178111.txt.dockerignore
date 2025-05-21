@@ -6,7 +6,6 @@
 !LICENSE
 !README.md
 frontend/node_modules
-!.yarn/**
 !.yarnrc.yml
 !frontend/.yarn/**
 !docker/index.js
