@@ -44,7 +44,6 @@ This document provides guidelines and instructions for setting up and working wi
 
    Alternatively, you can use the lock file for exact dependency versioning:
    ```bash
-   uv pip install -r requirements-uv.lock
    ```
 
 ## Development Workflow
