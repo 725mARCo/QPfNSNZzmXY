@@ -114,7 +114,6 @@ uvicorn aichildedu.ai_service.text_generator.main:app --reload --port 8010
    ```
 ## Docker Development
 
-For Docker-based development:
 
 1. Build and run the services:
    ```bash
