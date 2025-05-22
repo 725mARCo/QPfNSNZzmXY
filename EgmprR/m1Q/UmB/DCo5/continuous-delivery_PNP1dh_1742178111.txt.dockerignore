@@ -3,5 +3,4 @@
 !CHANGELOG.md
 !LICENSE
 frontend/node_modules
-!.yarnrc.yml
 !frontend/.yarn/**
