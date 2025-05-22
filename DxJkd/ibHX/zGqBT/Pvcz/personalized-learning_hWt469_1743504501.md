@@ -114,7 +114,6 @@ uvicorn aichildedu.ai_service.text_generator.main:app --reload --port 8010
    ```bash
    uv pip install -r requirements-uv.lock
    ```
-
 ## Docker Development
 
 For Docker-based development:
