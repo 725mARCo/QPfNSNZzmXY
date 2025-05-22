@@ -2,7 +2,6 @@
 
 This document provides guidelines and instructions for setting up and working with the AICHILDEDU development environment.
 
-## Development Environment Setup
 
 ### Option 1: Using pip (Traditional)
 1. Create and activate a virtual environment:
