@@ -5,7 +5,6 @@ This document provides guidelines and instructions for setting up and working wi
 ## Development Environment Setup
 
 ### Option 1: Using pip (Traditional)
-
 1. Create and activate a virtual environment:
    ```bash
    python -m venv venv
