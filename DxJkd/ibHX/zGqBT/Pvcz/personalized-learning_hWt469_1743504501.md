@@ -99,7 +99,6 @@ uvicorn aichildedu.ai_service.text_generator.main:app --reload --port 8010
 
 
 1. Update the `requirements.txt` file directly.
-2. Install the updated dependencies:
    ```bash
    pip install -r requirements.txt
 #### Using uv
