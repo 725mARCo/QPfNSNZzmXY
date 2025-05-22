@@ -1,6 +1,5 @@
 !src
 !yarn.lock
-!scripts
 !CHANGELOG.md
 !LICENSE
 frontend/node_modules
