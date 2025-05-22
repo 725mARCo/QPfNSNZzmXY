@@ -132,7 +132,6 @@ For Docker-based development:
    ```bash
    docker-compose logs -f
    ```
-
 ## Environment Variables
 
 
