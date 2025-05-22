@@ -38,7 +38,6 @@ This document provides guidelines and instructions for setting up and working wi
 3. Install dependencies:
    ```bash
    uv pip install -e ".[dev]"  # Install the project with development dependencies
-   ```
 
    Alternatively, you can use the lock file for exact dependency versioning:
    ```bash
