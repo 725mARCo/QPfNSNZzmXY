@@ -13,4 +13,3 @@ exclude_paths:
   - build/**
   - build_external/**
   - packaging/**
-  - src/aclk/mqtt_websockets/**
