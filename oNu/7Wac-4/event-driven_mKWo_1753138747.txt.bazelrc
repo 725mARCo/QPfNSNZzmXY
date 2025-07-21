@@ -1,0 +1,182 @@
+common --registry=https://bcr.bazel.build
+common --extra_toolchains=@current_llvm_toolchain//:all
+
+common --@toolchains_llvm//toolchain/config:libunwind=False
+common --@toolchains_llvm//toolchain/config:compiler-rt=False
+build --linkopt --unwindlib=libgcc
+build --linkopt -stdlib=libc++
+
+common:clang-18 --extra_toolchains=@previous_llvm_toolchain//:all
+common:clang-20 --extra_toolchains=@next_llvm_toolchain//:all
+
+# Use Bash instead of system python for finding the hermetic interpreter
+# within Bazel due to the `python3` binary not being present on CI
+# (it has `python` version 3 but Bazel uses the `python3` executable).
+common --@rules_python//python/config_settings:bootstrap_impl=script
+
+# By default build without CGO
+build --@rules_go//go/config:pure
+
+build:gofips --//bazel:gofips=True --@rules_go//go/toolchain:sdk_name=go_sdk_with_systemcrypto
+build:gofips --@rules_go//go/config:pure=false
+
+# Improve caching and readability of filepaths that the compiler uses by not using
+# absolute paths, and instead use paths that are relative to the redpanda repo.
+# https://github.com/bazel-contrib/toolchains_llvm/pull/445#issuecomment-2605443516
+build --copt=-ffile-compilation-dir=. --host_copt=-ffile-compilation-dir=.
+
+build:system-clang --extra_toolchains=@local_config_cc_toolchains//:all
+build:system-clang --action_env=BAZEL_COMPILER=clang
+build:system-clang --cxxopt=-std=c++23 --host_cxxopt=-std=c++23
+build:system-clang --linkopt -fuse-ld=lld
+# use a compiler name that doesn't symlink to ccache
+build:system-clang-18 --config=system-clang
+build:system-clang-18 --action_env=CC=clang-18 --host_action_env=CC=clang-18
+build:system-clang-18 --action_env=CXX=clang++-18 --host_action_env=CXX=clang++-18
+build:system-clang-19 --config=system-clang
+build:system-clang-19 --action_env=CC=clang-19 --host_action_env=CC=clang-19
+build:system-clang-19 --action_env=CXX=clang++-19 --host_action_env=CXX=clang++-19
+
+# Use new proto toolchain resolution
+build --incompatible_enable_proto_toolchain_resolution
+# Keep source info - bigger descriptors (not a problem at our scale),
+# but allows for printing comments in generated protos
+build --experimental_proto_descriptor_sets_include_source_info
+
+# https://github.com/bazelbuild/rules_foreign_cc/issues/1065
+# https://github.com/bazelbuild/rules_foreign_cc/issues/1186#issuecomment-2053550487
+build --host_action_env=CXXFLAGS=-Wno-int-conversion
+build --action_env=CXXFLAGS=-Wno-int-conversion
+build --host_action_env=CFLAGS=-Wno-int-conversion
+build --action_env=CFLAGS=-Wno-int-conversion
+
+build --keep_going
+
+# prevent actions and tests from using the network. anything that needs to
+# opt-out (e.g. a network test) can use `tags=["requires-network"]`.
+build --sandbox_default_allow_network=false
+
+# prevent certain environment variables (e.g. PATH and LD_LIBRARY_PATH) from
+# leaking into the build.
+build --incompatible_strict_action_env
+
+# Add stack guards by default for better debugging, we disable them in release builds
+build --@seastar//:stack_guards=True
+# Debug mode by default. Disabled in release builds.
+build --@seastar//:debug=True
+
+# =================================
+# Fastbuild
+# =================================
+# We want to have a --config=fastbuild that is effectively the same as no args
+# so specify a flag that does nothing to enable this
+build:fastbuild --build
+
+# =================================
+# Sanitizer
+# =================================
+build:sanitizer --compilation_mode=dbg
+build:sanitizer --copt -fsanitize=address,undefined,vptr,function,alignment
+build:sanitizer --linkopt -fsanitize=address,undefined,vptr,function,alignment
+build:sanitizer --linkopt -fsanitize-link-c++-runtime
+build:sanitizer --copt -O1
+build:sanitizer --//bazel:has_sanitizers=True
+# seastar has to be run with system allocator when using sanitizers
+build:sanitizer --@seastar//:system_allocator=True
+# krb5 is a foreign cc build and needs explicit list of sanitizers to build the shared library
+build:sanitizer --@krb5//:sanitizers=address,undefined,vptr,function,alignment
+
+# =================================
+# ODR Finder
+# =================================
+build:odr-finder --cxxopt -stdlib=libc++
+build:odr-finder --copt -g
+build:odr-finder --copt -O0
+build:odr-finder --linkopt -fuse-ld=gold
+build:odr-finder --linkopt -Wl,--detect-odr-violations
+build:odr-finder --linkopt -lc++
+build:odr-finder --linkopt -lc++abi
+build:odr-finder --strip never
+build:odr-finder --@krb5//:linker=gold
+
+# =================================
+# clang-tidy
+# =================================
+build:clang-tidy --aspects @bazel_clang_tidy//clang_tidy:clang_tidy.bzl%clang_tidy_aspect
+# TODO(rockwood): Switch back to current clang tidy once we upgrade to clang-20
+# We have to use another version because clang-19 has crashes
+build:clang-tidy --@bazel_clang_tidy//:clang_tidy_executable=@previous_llvm_toolchain//:clang-tidy
+build:clang-tidy --@bazel_clang_tidy//:clang_tidy_config=//:clang_tidy_config
+build:clang-tidy --copt -Wno-pragma-once-outside-header
+build:clang-tidy --output_groups=report
+
+# =================================
+# Security
+# =================================
+
+# fortify source requires a high optimization level. when using this feature add
+# `--copt -O2` or combine with a compilation mode like `-c opt`. the default
+# bazel toolchain adds _FORTIFY_SOURCE=1 in `-c opt`, so first clear the
+# definition to avoid -Wmacro-redefined warnings.
+build:fortify-source --copt -U_FORTIFY_SOURCE
+build:fortify-source --copt -D_FORTIFY_SOURCE=2
+
+build:stack-clash --copt -fstack-clash-protection
+build:stack-protector --copt -fstack-protector-strong
+build:relro --copt -fno-plt
+build:relro --linkopt -Wl,-z,relro,-z,now
+
+# Use `--config=secure` for all supported security settings
+build:secure --config=fortify-source
+build:secure --config=stack-clash
+build:secure --config=stack-protector
+build:secure --config=relro
+
+# =================================
+# Release
+# =================================
+build:release --compilation_mode opt
+build:release --config=secure
+build:release --copt -mllvm --copt -inline-threshold=2500
+build:release --@seastar//:stack_guards=False --@seastar//:debug=False
+build:release --//src/v/redpanda:lto=True
+build:release --copt -flto=thin --copt -ffat-lto-objects
+build:release --copt -g --strip=never
+
+build:stamp --stamp --workspace_status_command=./bazel/stamp_vars.sh
+build:stamp-full --stamp --workspace_status_command='./bazel/stamp_vars.sh full'
+
+# =================================
+# Coverage
+# =================================
+coverage --config=coverage
+build:coverage --action_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1
+build:coverage --action_env=GCOV=llvm-profdata
+build:coverage --copt=-DNDEBUG
+build:coverage --define=dynamic_link_tests=true
+build:coverage --combined_report=lcov
+build:coverage --experimental_use_llvm_covmap
+build:coverage --experimental_generate_llvm_lcov
+build:coverage --experimental_split_coverage_postprocessing
+build:coverage --experimental_fetch_all_coverage_outputs
+build:coverage --collect_code_coverage
+build:coverage --instrumentation_filter="^//src/v[/:]"
+
+# =================================
+# Testing
+# =================================
+
+# prints out combined stdout/stderr for failed tests
+test --test_output=errors
+
+# warn if a timeout is much longer than actual runtime
+test --test_verbose_timeout_warnings
+
+# Use --config=lldb to run a test under lldb
+# to connect run `gdb-remote 7654` in an lldb session
+test:lldb --run_under='@current_llvm_toolchain_llvm//:bin/lldb-server g :7654 --'
+# Bump timeout to 1h
+test:lldb --test_timeout=3600
+test:lldb --strategy=TestRunner=local
+
+try-import %workspace%/user.bazelrc
