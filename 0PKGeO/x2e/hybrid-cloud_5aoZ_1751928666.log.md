@@ -437,7 +437,6 @@ var (
 )
 ```
 
-The const is used to generate `google/resourcetype_enumer.go`.
 
 3. Add the associated function to generate terraform codes.
 
