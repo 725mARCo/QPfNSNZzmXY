@@ -1,0 +1,62 @@
+---
+repos:
+  # YAML auto-formatters
+  - repo: https://github.com/lyz-code/yamlfix/
+    rev: 1.16.0
+    hooks:
+      - id: yamlfix
+        exclude: (.*ci.yml|.*.yamllint.yaml|.*.markdownlint.yml|.*.prettierrc.yaml)
+  # Prettier auto-formatter
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        args: [--config=.prettierrc.yaml]
+        exclude: (.*ci.yml|.*.yamllint.yaml|.*.markdownlint.yml|.*.prettierrc.yaml)
+  # GENERAL
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: debug-statements
+        exclude: .*test_hello.py
+      - id: check-ast
+        exclude: .*test_hello.py
+      - id: check-docstring-first
+      - id: check-yaml
+        exclude: (.*ci.yml|.*.yamllint.yaml|.*.markdownlint.yml|.*.prettierrc.yaml)
+      - id: check-toml
+      - id: check-added-large-files
+  # Python auto-formatters
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.3.1
+    hooks:
+      - id: autoflake
+        args:
+          - --in-place
+          - --remove-all-unused-imports
+          - --remove-unused-variables
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.5
+    hooks:
+      - id: docformatter
+        args: [--in-place, --wrap-summaries=120, --wrap-descriptions=120]
+  - repo: https://github.com/ikamensh/flynt
+    rev: 1.0.1
+    hooks:
+      - id: flynt
+  # BASH auto-formatters
+  - repo: https://github.com/cisagov/pre-commit-shfmt
+    rev: v0.0.2
+    hooks:
+      - id: shfmt
+        args: [-i=4]
+  # Markdown lint
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.39.0
+    hooks:
+      - id: markdownlint
+        args: [--config=.markdownlint.yml]
